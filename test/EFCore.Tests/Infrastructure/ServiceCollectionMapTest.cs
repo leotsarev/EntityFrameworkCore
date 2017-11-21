@@ -14,7 +14,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         [Fact]
         public void Can_add_delegate_services()
         {
-            Func<IServiceProvider, FakeService> factory = p => new FakeService();
+            FakeService factory(IServiceProvider p) => new FakeService();
 
             AddServiceDelegateTest(m => m.TryAddTransient<IFakeService, FakeService>(factory), factory, ServiceLifetime.Transient);
             AddServiceDelegateTest(m => m.TryAddScoped<IFakeService, FakeService>(factory), factory, ServiceLifetime.Scoped);
@@ -178,8 +178,8 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         [Fact]
         public void Can_add_multiple_delegate_services()
         {
-            Func<IServiceProvider, FakeService> factory1 = p => new FakeService();
-            Func<IServiceProvider, DerivedFakeService> factory2 = p => new DerivedFakeService();
+            FakeService factory1(IServiceProvider p) => new FakeService();
+            DerivedFakeService factory2(IServiceProvider p) => new DerivedFakeService();
 
             AddServiceDelegateEnumerableTest(
                 m => m.TryAddTransientEnumerable<IFakeService, FakeService>(factory1),
@@ -264,7 +264,9 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             public DbContext Context { get; private set; }
 
             void IPatchServiceInjectionSite.InjectServices(IServiceProvider serviceProvider)
-                => Context = serviceProvider.GetService<ICurrentDbContext>().Context;
+            {
+                Context = serviceProvider.GetService<ICurrentDbContext>().Context;
+            }
         }
 
         private class DerivedFakeService : FakeService
